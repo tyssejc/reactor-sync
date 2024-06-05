@@ -102,7 +102,9 @@ async function toFiles(data, args) {
           )).transforms;
         }
 
-      // extensions
+      // property
+      } else if (data.type === 'property') {
+        return;
       } else if (data.type === 'extensions') {
         if (
           data.relationships.extension_package &&
@@ -222,9 +224,12 @@ ${value}
               `${localPath}/settings.${transform.propertyPath}.js`,
               value
             );
+          } else if (transform.type === 'remove') {
+            // this transform type is used by the Adobe Analytics extension
+            // with the trackerProperties and libraryCode.company propertyPaths
+            return;
           } else {
-            console.error('unrecognized transform');
-            console.log(transform);
+            throw new Error('unrecognized transform: ', transform);
           }
         });
       }
