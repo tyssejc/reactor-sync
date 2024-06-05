@@ -10,9 +10,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-const fs = require('fs');
-const jwt = require('jwt-simple');
-const request = require('request-promise-native');
+const { default: fetch } = require('node-fetch-cjs');
 
 async function checkAccessToken(args) {
   if (!args.accessToken)
@@ -45,48 +43,33 @@ async function getAccessToken(settings) {
   if (!environment.jwt) {
     throw Error('settings file does not have an "environment.jwt" property.');
   }
+ 
+  const clientId = integration.clientId;
+  const clientSecret = integration.clientSecret;
+  const scope = 'AdobeID,openid,read_organizations,additional_info.job_function,additional_info.projectedProductContext,additional_info.roles';
+  
+  const tokenUrl = 'https://ims-na1.adobelogin.com/ims/token/v3';
+  const body = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    grant_type: 'client_credentials',
+    scope
+  });
+  
+  const accessToken = await fetch(tokenUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body
+  })
+  .then(response => response.json())
+  .then(data => {
+    return data.access_token;
+  })
+  .catch(error => console.error(error));
 
-  let privateKeyContent;
-
-  // check the privateKey exists
-  if (fs.existsSync(integration.privateKey)) {
-    privateKeyContent = fs.readFileSync(integration.privateKey);
-  } else {
-    throw Error('Private Key file does not exist at that location.');
-  }
-
-  // generate a jwtToken
-  integration.payload.exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24;
-  const jwtToken = jwt.encode(integration.payload, privateKeyContent, 'RS256');
-
-  // Make a request to exchange the jwt token for a bearer token
-  try {
-
-    const body = await request({
-      method: 'POST',
-      url: environment.jwt,
-      headers: {
-        'Cache-Control': 'no-cache'
-      },
-      form: {
-        client_id: integration.clientId,
-        client_secret: integration.clientSecret,
-        jwt_token: jwtToken
-      },
-      transform: JSON.parse
-    });
-
-    return body.access_token;
-
-  } catch (e) {
-
-    console.log(e);
-
-    const parsedErrorObject = JSON.parse(e.error);
-    
-    throw new Error(`Error retrieving access token. ${parsedErrorObject.error_description}.  Please check the values in the settings file are still valid`);
-
-  }
+  return accessToken;
 
 }
 
