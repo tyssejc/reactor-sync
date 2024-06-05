@@ -3,7 +3,7 @@ const writeResources = require('./utils/writeResources');
 const checkAccessToken = require('./utils/getAccessToken');
 const checkArgs = require('./utils/checkArgs');
 const getReactor = require('./utils/getReactor');
-const resourceTypes = ['data_elements', 'property', 'extensions', 'rules', 'rule_components', 'environments'];
+const resourceTypes = ['data_elements', 'extensions', 'rules', 'rule_components', 'environments'];
 
 
 function startSpinner() {
