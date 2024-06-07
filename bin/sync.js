@@ -31,7 +31,7 @@ async function updateExtension(reactor, local) {
 }
 
 async function updateResource(reactor, local) {
-  const resourceName = toMethodName(local.type);
+  const resourceName = toMethodName(local.type === 'rule_components' ? 'rule_component' : local.type);
   const update = (await reactor[`update${resourceName}`]({
     id: local.id,
     type: local.type,
