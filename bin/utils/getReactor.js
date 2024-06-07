@@ -4,7 +4,8 @@ async function getReactor(settings) {
   if (!settings.reactor)
     return await new Reactor(settings.accessToken, {
       reactorUrl: settings.environment.reactorUrl,
-      enableLogging: false // turn true to help debug
+      customHeaders: {'x-gw-ims-org-id': settings.orgId},
+      enableLogging: true // turn true to help debug
     });
   return settings.reactor;
 }
