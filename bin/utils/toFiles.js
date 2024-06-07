@@ -11,12 +11,12 @@ governing permissions and limitations under the License.
 */
 
 const fs = require('fs');
-const mkdirp = require('mkdirp');
+const { mkdirp } = require('mkdirp');
 const sanitize = require('sanitize-filename');
 
 function checkCreateDir(localPath) {
   if (!fs.existsSync(localPath))
-    mkdirp(localPath);
+    mkdirp.sync(localPath);
 }
 
 function getLocalPath(data, args) {
@@ -37,10 +37,8 @@ function sanitizeName(data) {
 }
 
 function makeSymLink(localDirectory, sanitizedName, data) {
-  if (!fs.existsSync(`${localDirectory}/${sanitizedName}`)) {
-    mkdirp(`${localDirectory}/${sanitizedName}`);
-    fs.symlinkSync(data.id, `${localDirectory}/${sanitizedName}`, 'dir');
-  }
+  if (fs.lstatSync(`${localDirectory}/${sanitizedName}`)) return;
+  fs.symlinkSync(`${localDirectory}/${data.id}`, `${localDirectory}/${sanitizedName}`, 'dir');
 }
 
 function sanitizeLink(data, localDirectory) {
